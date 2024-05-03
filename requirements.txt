@@ -1,0 +1,9 @@
+python-dotenv
+selenium
+parse
+w3lib
+multiprocessing
+time
+regex
+datetime
+random

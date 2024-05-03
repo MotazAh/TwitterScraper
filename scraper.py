@@ -52,11 +52,12 @@ def scrape_accounts(return_list, symbol:str, accounts, time_interval:int=15, ver
 # Searches through chosen user's posts for given symbol in a specific time interval
 def scrape_for_symbol(return_list, symbol, url:str, time_interval, verbose):
     options = ChromeOptions()
-    options.add_argument("--headless=new")
-    options.add_argument('log-level=3')
+    options.add_argument("--headless=new") # Avoid opening browser on display
+    options.add_argument('log-level=3') # Avoid printing unnecessary warnings
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
     options.add_experimental_option('prefs', {"profile.managed_default_content_settings.images": 2}) # Avoid loading images
 
+    # Start Chrome Driver
     driver = webdriver.Chrome(options=options)
     if verbose > 0:
         print('Started Chrome Driver')
@@ -76,6 +77,7 @@ def scrape_for_symbol(return_list, symbol, url:str, time_interval, verbose):
         print('Navigating to ' + url)
     driver.get(url)
 
+    # Allow page to complete loading initially
     time.sleep(2.5)
     
     if verbose > 0:
@@ -122,12 +124,14 @@ def scrape_for_symbol(return_list, symbol, url:str, time_interval, verbose):
                 
                 # Check if post is a repost or pinned
                 try:
+                    # Attempt to check if post is a pinned post
                     pinned = post.find_element(By.XPATH, ".//div[@data-testid='socialContext']")
                     if (pinned.text == 'Pinned'):
                         continue
                 except:
                     pass
                 try:
+                    # Attempt to check if the post is a repost
                     repost = post.find_element(By.XPATH, ".//span[@data-testid='socialContext']")
                     if repost.text.find('reposted'):
                         is_repost = True
@@ -144,12 +148,14 @@ def scrape_for_symbol(return_list, symbol, url:str, time_interval, verbose):
                 if tweet_text and verbose >= 2:
                     print(url + ' -> ' + str(tweet_time) + ' -- ' + str(tweet_time_stamp) + ' -- ' + str(time_difference), end=' ')
                 
-                if re.search(exp, tweet_text): # Search for a cash symbol match in text and append to result
+                # Search for a cash symbol match in text and append to result
+                if re.search(exp, tweet_text): 
                     if verbose >= 2:
                         print("Found match", end=' ')
-                    return_list.append(1) # Append the cash symbol count
+                    return_list.append(1) 
                 if verbose >= 2:
                     print('')
+        # Stop scraping when no new posts are found
         if not new_post_exists:
             return
 
